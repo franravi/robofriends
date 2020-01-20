@@ -21,6 +21,14 @@ const CardList	=	({ robots })	=>	{
 	});
 	return	<div>{cardArray}</div>;
 */
+	//	Here we will test ErrorBoundry component (set if to true):
+	//	In production, the screen will be the "Ops" message that appears for a brief second for us.  Since we are
+	//	in dev, the intended behavior is to show more detailed debug information.
+	//
+	if (false)	{
+		throw	new	Error('Nooooo');
+	}
+
 	//	Version 2: We grab the map piece and stuck it inside the return part.
 	return	(
 		<div>

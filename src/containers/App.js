@@ -1,7 +1,13 @@
 import	React, { Component} 	from	'react'
-import	CardList 				from 	'./CardList'
-import	SearchBox				from	'./SearchBox'
-import	{ robots }				from 	'./robots'
+import	CardList 				from 	'../components/CardList'
+import	SearchBox				from	'../components/SearchBox'
+import	Scroll					from	'../components/Scroll'
+import 	ErrorBoundry			from	'../components/ErrorBoundry'
+
+//	Next import no longer used, as we will replace it with an external feed.
+//
+//import	{ robots }				from 	'./robots'
+
 import	'./App.css';
 
 //	To enable the search, we need to create a state.
@@ -25,10 +31,34 @@ class	App	extends	Component
 	constructor()
 	{
 		super()
+
+		//	Our first change in this version is to set robots to empty array, as instead of pre-filling it
+		//  hardcoded, we will instead access a REST service.
+		//
 		this.state	=	{
-			robots: 		robots,
+			robots: 		[],
 			searchfield: 	''
 		}
+	}
+
+	/*
+	**	componentDidMount()	-	Mounting method invoked after component was inserted in the tree.
+	**							Here we will feed robots with data.
+	*/
+	componentDidMount() {
+		//	The version here grabs data from our hardcoded file, but it is just for testing, we will use a json
+		//  feed from a service.
+		//
+		//this.setState({ robots: robots})
+
+		fetch('http://jsonplaceholder.typicode.com/users')
+			.then(response	=>	{
+				return	response.json();
+			})
+			.then(users	=>	{
+				this.setState({ robots: users})
+			})
+		
 	}
 
 	/*
@@ -62,11 +92,19 @@ class	App	extends	Component
 	*/
 	render()
 	{
+		//	Added some variables for cleaning around.
+		//
+		const 	{ robots, searchfield	}	=	this.state;
+
 		//	Copied over from onSearchChange(), so that we can update the render.
 		//
-		const filteredRobots	=	this.state.robots.filter(robots	=>{
-			return	robots.name.toLowerCase().includes(this.state.searchfield.toLowerCase());
+		const filteredRobots	=	robots.filter(robots	=>{
+			return	robots.name.toLowerCase().includes(searchfield.toLowerCase());
 		});
+
+		if (!robots.length)	{
+			return	<h1>Loading</h1>
+		}
 
 		//	Also, we originally had <CardList robots={robots}/>, but now we will change it to
 		//	pass a reference to our state robots storage.
@@ -77,11 +115,17 @@ class	App	extends	Component
 		//	access it.  So instead of using <CardList robots={this.state.robots}/>, we will
 		//	directly use filteredRobots there.
 		//
+		//	We now use children to pass CardList to Scroll and set it as children.
+		//
 		return	(
 			<div className="tc">
 				<h1 className="f2">Robofriends</h1>
 				<SearchBox searchChange={this.onSearchChange} />
-				<CardList robots={filteredRobots}/>
+				<Scroll>
+					<ErrorBoundry>
+						<CardList robots={filteredRobots}/>
+					</ErrorBoundry>
+				</Scroll>
 			</div>
 		);
 	}
